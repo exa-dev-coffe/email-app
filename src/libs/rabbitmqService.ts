@@ -10,7 +10,7 @@ class RabbitmqService {
         if (!this.connection) {
             this.connection = await amqp.connect(Config.RABBITMQ_BROKER_URL)
             this.channel = await this.connection.createChannel()
-
+            await this.channel.prefetch(5); // atau sesuai kapasitas server
             this.channel.on("error", (err) => {
                 console.error("RabbitMQ channel error:", err);
                 this.connection = null;
