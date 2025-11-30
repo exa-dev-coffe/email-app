@@ -1,4 +1,4 @@
-import amqp, {Channel, ChannelModel, ConsumeMessage} from "amqplib";
+import amqp, {type Channel, type ChannelModel, type ConsumeMessage} from "amqplib";
 import Config from "../config/config";
 
 class RabbitmqService {
