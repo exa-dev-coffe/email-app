@@ -88,12 +88,12 @@ app.get('/health', async (_req, res) => {
     }
 });
 
-app.all('(.*)', (_req, res) => {
+app.use((_, res) => {
     res.status(404).json({message: 'Resource not found'});
 });
 
 
-const server = app.listen(Config.PORT, () => {
+app.listen(Config.PORT, () => {
     console.log(`🚀 Express is running at http://localhost:${Config.PORT}`);
 });
 

@@ -1,3 +1,8 @@
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+
 class Config {
     static PORT = process.env.PORT || 3000;
     static RABBITMQ_BROKER_URL = process.env.RABBITMQ_BROKER_URL || 'amqp://localhost:5672';
