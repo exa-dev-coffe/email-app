@@ -21,11 +21,11 @@ jobs:
 
       - name: Build Image With SHA Tag
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/queue:${{ steps.vars.outputs.sha }} .
+          docker build -t ghcr.io/${{ github.repository_owner }}/email-service-coffe:${{ steps.vars.outputs.sha }} .
 
       - name: Push Image
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/queue:${{ steps.vars.outputs.sha }}
+          docker push ghcr.io/${{ github.repository_owner }}/email-service-coffe:${{ steps.vars.outputs.sha }}
 
       - name: Deploy to VPS
         run: |
@@ -37,10 +37,8 @@ jobs:
           ssh -p 31080 -i ~/.ssh/id_ed25519 deploy@${{ secrets.VPS_HOST }} << EOF
           export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
           
-          kubectl apply -f kube_config/salsha/queue.yaml
-          
           # Patch the deployment to use the new SHA tag
-          kubectl set image deployment/queue -n salsha \
-           queue=ghcr.io/${{ github.repository_owner }}/queue:${{ steps.vars.outputs.sha }}
+          kubectl set image deployment/email-service-coffe -n dev-coffe \
+           email-service-coffe=ghcr.io/${{ github.repository_owner }}/email-service-coffe:${{ steps.vars.outputs.sha }}
           
           EOF
