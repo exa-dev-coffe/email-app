@@ -60,8 +60,8 @@ import express from 'express';
 
     // Consumer
     await Promise.all([
-        RabbitmqService.consume("emailQueue.resetPassword", callBackResetPassword),
-        RabbitmqService.consume("emailQueue.resetPasswordSuccess", callBackSuccessResetPassword)
+        RabbitmqService.consume("email.queue", "emailQueue.resetPassword", "Email Reset Password", 'direct', true, callBackResetPassword),
+        RabbitmqService.consume("email.queue", 'emailQueue.resetPasswordSuccess', 'Email Reset Password Success', 'direct', true, callBackSuccessResetPassword)
     ]);
 
 })();

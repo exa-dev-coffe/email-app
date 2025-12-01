@@ -26,19 +26,44 @@ class RabbitmqService {
         }
     }
 
-    async consume(channelName: string, onMessage: (msg: ConsumeMessage, channel: Channel) => Promise<void>): Promise<void> {
+    async consume(
+        exchangeName: string,
+        routingKey: string,
+        queueName: string,
+        type: "topic" | "direct" | "fanout" = "topic",
+        durable: boolean = true,
+        onMessage: (msg: ConsumeMessage, channel: Channel) => Promise<void>
+    ): Promise<void> {
+
         if (!this.channel) {
             throw new Error("RabbitMQ channel is not initialized");
         }
 
-        await this.channel.assertQueue(channelName, {durable: true});
+        // 1. Pastikan exchangenya ada
+        await this.channel.assertExchange(exchangeName, type, {durable: durable,});
 
-        this.channel.consume(channelName, (msg) => {
-            if (msg && this.channel) {
-                onMessage(msg, this.channel);
-                // this.channel.ack(msg);
+        // 2. Pastikan queue ada
+        await this.channel.assertQueue(queueName, {durable: durable,});
+
+        // 3. Binding queue ke exchange dengan routing key
+        await this.channel.bindQueue(queueName, exchangeName, routingKey);
+
+        console.log(
+            `Consumer ready → queue '${queueName}' bound to exchange '${exchangeName}' with routing key '${routingKey}'`
+        );
+        // 4. Consume
+        await this.channel.consume(queueName, async (msg) => {
+            if (msg) {
+                try {
+                    await onMessage(msg, this.channel!);
+                    this.channel!.ack(msg);
+                } catch (err) {
+                    console.error("Error handling message", err);
+                    this.channel!.nack(msg, false, true); // retry
+                }
             }
         });
+
     }
 
     // ✅ Health check
