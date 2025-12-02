@@ -10,6 +10,8 @@ class Config {
     static readonly SMTP_PORT = process.env.SMTP_PORT || '587';
     static readonly SMTP_USER = process.env.SMTP_USER || 'testuser'
     static readonly SMTP_PASS = process.env.SMTP_PASS || 'testpass';
+    // Resend API key (used when switching to Resend SDK)
+    static readonly RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 }
 
 export default Config;

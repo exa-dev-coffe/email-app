@@ -1,35 +1,29 @@
-import nodemailer from 'nodemailer';
 import Config from "../config/config";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
+import {Resend} from "resend";
 
 
 class MailService {
-    private transporter: nodemailer.Transporter<SMTPTransport.SentMessageInfo, SMTPTransport.Options>;
+    private client: Resend;
 
     constructor() {
-        // Initialize your mail transporter here (e.g., using nodemailer)
-        this.transporter = nodemailer.createTransport(
-            {
-                host: Config.SMTP_HOST,
-                port: Number(Config.SMTP_PORT),
-                secure: process.env.NODE_ENV === 'production',
-                auth: {
-                    user: Config.SMTP_USER,
-                    pass: Config.SMTP_PASS,
-                }
-            }
-        )
+        // Initialize Resend client with API key from config
+        if (!Config.RESEND_API_KEY) {
+            console.warn('RESEND_API_KEY is not set. Emails will fail until the key is provided.');
+        }
+        // @ts-ignore - Resend exports a default function/class
+        this.client = new Resend(Config.RESEND_API_KEY);
     }
 
-    async sendMail({to, subject, html}: { to: string, subject: string, html: string }): Promise<boolean> {
+    async sendMail({to, subject, html}: { to: string; subject: string; html: string; }): Promise<boolean> {
         try {
-            await this.transporter.sendMail({
-                from: `"Coffe" ${Config.SMTP_USER}`,
+            // Using Resend to send an email. Adjust from address as needed.
+            await this.client.emails.send({
+                from: `Coffe <${Config.SMTP_USER}>`,
                 to,
                 subject,
-                html: html
-            })
-            return true
+                html
+            });
+            return true;
         } catch (e) {
             console.error(`Failed to send email to ${to}: ${JSON.stringify(e)}`);
             return false;
