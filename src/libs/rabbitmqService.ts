@@ -53,14 +53,8 @@ class RabbitmqService {
         );
         // 4. Consume
         await this.channel.consume(queueName, async (msg) => {
-            if (msg) {
-                try {
-                    await onMessage(msg, this.channel!);
-                    this.channel!.ack(msg);
-                } catch (err) {
-                    console.error("Error handling message", err);
-                    this.channel!.nack(msg, false, true); // retry
-                }
+            if (msg && this.channel) {
+                await onMessage(msg, this.channel);
             }
         });
 
