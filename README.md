@@ -1,15 +1,38 @@
-# Elysia with Bun runtime
+# Email Service (email-service)
 
-## Getting Started
-To get started with this template, simply paste this command into your terminal:
+Email Service is a lightweight microservice responsible for handling asynchronous email delivery across the platform.
+
+## 🚀 Technologies
+
+*   **Runtime**: Node.js / Bun
+*   **Language**: TypeScript
+*   **Messaging**: RabbitMQ (Consumer)
+*   **Email Client**: Nodemailer (or similar)
+
+## 📦 Features
+
+*   **Asynchronous Processing**: Listens to RabbitMQ queues for email tasks.
+*   **Templating**: Sends dynamically formatted HTML emails.
+*   **Reliability**: Handles email retries and failures gracefully.
+
+## ⚙️ Environment Variables
+
+Copy `.env.example` to `.env` and fill in your SMTP credentials:
+
 ```bash
-bun create elysia ./elysia-example
+cp .env.example .env
 ```
 
-## Development
-To start the development server run:
-```bash
-bun run dev
-```
+## 🚀 How to Run
 
-Open http://localhost:3000/ with your browser to see the result.
+1.  **Install Dependencies:**
+    ```bash
+    bun install
+    # or npm install
+    ```
+
+2.  **Run Development Server:**
+    ```bash
+    bun run dev
+    # or npm run dev
+    ```
