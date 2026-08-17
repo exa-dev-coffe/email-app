@@ -1,5 +1,6 @@
 import amqp, {type Channel, type ChannelModel, type ConsumeMessage} from "amqplib";
 import Config from "../config/config";
+import Logger from "./logger";
 
 class RabbitmqService {
 
@@ -12,17 +13,17 @@ class RabbitmqService {
             this.channel = await this.connection.createChannel()
             await this.channel.prefetch(5); // atau sesuai kapasitas server
             this.channel.on("error", (err) => {
-                console.error("RabbitMQ channel error:", err);
+                Logger.error("RabbitMQ channel error: %O", err);
                 this.connection = null;
                 this.channel = null;
             })
             this.channel.on("close", () => {
-                console.warn("RabbitMQ channel closed");
+                Logger.warn("RabbitMQ channel closed");
                 this.connection = null;
                 this.channel = null;
             })
 
-            console.log("Connected to RabbitMQ");
+            Logger.info("Connected to RabbitMQ");
         }
     }
 
@@ -48,7 +49,7 @@ class RabbitmqService {
         // 3. Binding queue ke exchange dengan routing key
         await this.channel.bindQueue(queueName, exchangeName, routingKey);
 
-        console.log(
+        Logger.info(
             `Consumer ready → queue '${queueName}' bound to exchange '${exchangeName}' with routing key '${routingKey}'`
         );
         // 4. Consume
@@ -70,4 +71,4 @@ class RabbitmqService {
     }
 }
 
-export default new RabbitmqService();
+export default new RabbitmqService();
