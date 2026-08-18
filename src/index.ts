@@ -19,6 +19,8 @@ import express from 'express';
     const templateHtmlTopupReceipt = fs.readFileSync(templatePathTopupReceipt, "utf-8");
     const templatePathOrderReceipt = path.join(__dirname, "templates", "content_order_receipt.html");
     const templateHtmlOrderReceipt = fs.readFileSync(templatePathOrderReceipt, "utf-8");
+    const templatePathVerificationCode = path.join(__dirname, "templates", "content_verification_code.html");
+    const templateHtmlVerificationCode = fs.readFileSync(templatePathVerificationCode, "utf-8");
 
     const callBackResetPassword = async (msg: ConsumeMessage, channel: Channel) => {
         Logger.info(`[RabbitMQ] 📥 Received message for: Email Reset Password`);
@@ -160,13 +162,43 @@ import express from 'express';
         }
     }
 
+    const callBackVerificationCode = async (msg: ConsumeMessage, channel: Channel) => {
+        Logger.info(`[RabbitMQ] 📥 Received message for: Email Verification Code`);
+        const content = msg.content.toString();
+        const data: {
+            to: string,
+            subject: string,
+            code: string
+        } = JSON.parse(content);
+
+        const html = templateHtmlVerificationCode
+            .replace("{{code}}", data.code)
+            .replace("{{email}}", data.to)
+            .replace("{{year}}", new Date().getFullYear().toString());
+
+        const success = await EmailService.sendMail({
+            to: data.to,
+            subject: data.subject,
+            html: html
+        });
+
+        if (success) {
+            Logger.info(`[RabbitMQ] ✅ Verification code email successfully sent to ${data.to}`);
+            channel.ack(msg);
+        } else {
+            Logger.error(`[RabbitMQ] ❌ Failed to send verification code email to ${data.to}, requeueing...`);
+            channel.nack(msg, false, true); // requeue
+        }
+    }
+
 
     // Consumer
     await Promise.all([
         RabbitmqService.consume("email.queue", "emailQueue.resetPassword", "Email Reset Password", 'direct', true, callBackResetPassword),
         RabbitmqService.consume("email.queue", 'emailQueue.resetPasswordSuccess', 'Email Reset Password Success', 'direct', true, callBackSuccessResetPassword),
         RabbitmqService.consume("email.queue", 'emailQueue.topupReceipt', 'Email Topup Receipt', 'direct', true, callBackTopupReceipt),
-        RabbitmqService.consume("email.queue", 'emailQueue.orderReceipt', 'Email Order Receipt', 'direct', true, callBackOrderReceipt)
+        RabbitmqService.consume("email.queue", 'emailQueue.orderReceipt', 'Email Order Receipt', 'direct', true, callBackOrderReceipt),
+        RabbitmqService.consume("email.queue", 'emailQueue.verificationCode', 'Email Verification Code', 'direct', true, callBackVerificationCode)
     ]);
 
 
