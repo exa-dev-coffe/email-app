@@ -17,6 +17,8 @@ import express from 'express';
     const templateHtmlSuccessResetPassword = fs.readFileSync(templatePathSuccessResetPassword, "utf-8");
     const templatePathTopupReceipt = path.join(__dirname, "templates", "content_topup_receipt.html");
     const templateHtmlTopupReceipt = fs.readFileSync(templatePathTopupReceipt, "utf-8");
+    const templatePathOrderReceipt = path.join(__dirname, "templates", "content_order_receipt.html");
+    const templateHtmlOrderReceipt = fs.readFileSync(templatePathOrderReceipt, "utf-8");
 
     const callBackResetPassword = async (msg: ConsumeMessage, channel: Channel) => {
         Logger.info(`[RabbitMQ] 📥 Received message for: Email Reset Password`);
@@ -114,12 +116,57 @@ import express from 'express';
         }
     }
 
+    const callBackOrderReceipt = async (msg: ConsumeMessage, channel: Channel) => {
+        Logger.info(`[RabbitMQ] 📥 Received message for: Email Order Receipt`);
+        const content = msg.content.toString();
+        const data: {
+            to: string,
+            subject: string,
+            userName: string,
+            orderId: string | number,
+            orderFor: string,
+            amount: number,
+            date: string
+        } = JSON.parse(content);
+
+        // Format amount as Indonesian Rupiah (IDR)
+        const formattedAmount = new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0
+        }).format(data.amount);
+
+        const html = templateHtmlOrderReceipt
+            .replace("{{userName}}", data.userName)
+            .replace("{{orderId}}", String(data.orderId))
+            .replace("{{date}}", data.date)
+            .replace("{{orderFor}}", data.orderFor || "-")
+            .replace("{{amount}}", formattedAmount)
+            .replace("{{email}}", data.to)
+            .replace("{{year}}", new Date().getFullYear().toString());
+
+        const success = await EmailService.sendMail({
+            to: data.to,
+            subject: data.subject,
+            html: html
+        })
+
+        if (success) {
+            Logger.info(`[RabbitMQ] ✅ Order receipt email successfully sent to ${data.to} for amount ${formattedAmount}`);
+            channel.ack(msg);
+        } else {
+            Logger.error(`[RabbitMQ] ❌ Failed to send order receipt email to ${data.to}, requeueing...`);
+            channel.nack(msg, false, true); // requeue
+        }
+    }
+
 
     // Consumer
     await Promise.all([
         RabbitmqService.consume("email.queue", "emailQueue.resetPassword", "Email Reset Password", 'direct', true, callBackResetPassword),
         RabbitmqService.consume("email.queue", 'emailQueue.resetPasswordSuccess', 'Email Reset Password Success', 'direct', true, callBackSuccessResetPassword),
-        RabbitmqService.consume("email.queue", 'emailQueue.topupReceipt', 'Email Topup Receipt', 'direct', true, callBackTopupReceipt)
+        RabbitmqService.consume("email.queue", 'emailQueue.topupReceipt', 'Email Topup Receipt', 'direct', true, callBackTopupReceipt),
+        RabbitmqService.consume("email.queue", 'emailQueue.orderReceipt', 'Email Order Receipt', 'direct', true, callBackOrderReceipt)
     ]);
 
 
