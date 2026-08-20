@@ -21,6 +21,8 @@ import express from 'express';
     const templateHtmlOrderReceipt = fs.readFileSync(templatePathOrderReceipt, "utf-8");
     const templatePathVerificationCode = path.join(__dirname, "templates", "content_verification_code.html");
     const templateHtmlVerificationCode = fs.readFileSync(templatePathVerificationCode, "utf-8");
+    const templatePathResetPin = path.join(__dirname, "templates", "content_reset_pin.html");
+    const templateHtmlResetPin = fs.readFileSync(templatePathResetPin, "utf-8");
 
     const callBackResetPassword = async (msg: ConsumeMessage, channel: Channel) => {
         Logger.info(`[RabbitMQ] 📥 Received message for: Email Reset Password`);
@@ -191,6 +193,35 @@ import express from 'express';
         }
     }
 
+    const callBackResetPinCode = async (msg: ConsumeMessage, channel: Channel) => {
+        Logger.info(`[RabbitMQ] 📥 Received message for: Email Reset PIN Code`);
+        const content = msg.content.toString();
+        const data: {
+            to: string,
+            subject: string,
+            code: string
+        } = JSON.parse(content);
+
+        const html = templateHtmlResetPin
+            .replace("{{code}}", data.code)
+            .replace("{{email}}", data.to)
+            .replace("{{year}}", new Date().getFullYear().toString());
+
+        const success = await EmailService.sendMail({
+            to: data.to,
+            subject: data.subject,
+            html: html
+        });
+
+        if (success) {
+            Logger.info(`[RabbitMQ] ✅ Reset PIN code email successfully sent to ${data.to}`);
+            channel.ack(msg);
+        } else {
+            Logger.error(`[RabbitMQ] ❌ Failed to send Reset PIN code email to ${data.to}, requeueing...`);
+            channel.nack(msg, false, true); // requeue
+        }
+    }
+
 
     // Consumer
     await Promise.all([
@@ -198,7 +229,8 @@ import express from 'express';
         RabbitmqService.consume("email.queue", 'emailQueue.resetPasswordSuccess', 'Email Reset Password Success', 'direct', true, callBackSuccessResetPassword),
         RabbitmqService.consume("email.queue", 'emailQueue.topupReceipt', 'Email Topup Receipt', 'direct', true, callBackTopupReceipt),
         RabbitmqService.consume("email.queue", 'emailQueue.orderReceipt', 'Email Order Receipt', 'direct', true, callBackOrderReceipt),
-        RabbitmqService.consume("email.queue", 'emailQueue.verificationCode', 'Email Verification Code', 'direct', true, callBackVerificationCode)
+        RabbitmqService.consume("email.queue", 'emailQueue.verificationCode', 'Email Verification Code', 'direct', true, callBackVerificationCode),
+        RabbitmqService.consume("email.queue", 'emailQueue.resetPin', 'Email Reset PIN Code', 'direct', true, callBackResetPinCode)
     ]);
 
 
