@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Receipt - Diskusi Coffee</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .header {
+            background-color: #d97706; /* Amber-600 */
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px 25px;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .greeting {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .intro-text {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        .receipt-table {
+            width: 100%;
+            background-color: #fffbeb; /* Amber-50 */
+            border: 1px dashed #f59e0b; /* Amber-500 */
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-collapse: collapse;
+        }
+
+        .receipt-td-label {
+            color: #78350f; /* Amber-900 */
+            font-weight: 600;
+            font-size: 13px;
+            padding: 10px 15px;
+            text-align: left;
+        }
+
+        .receipt-td-value {
+            color: #451a03;
+            font-weight: 700;
+            font-family: monospace;
+            font-size: 13px;
+            padding: 10px 15px;
+            text-align: right;
+        }
+
+        .receipt-td-total-label {
+            font-size: 14px;
+            font-weight: 800;
+            color: #92400e;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .receipt-td-total-value {
+            font-size: 16px;
+            font-weight: 900;
+            color: #d97706;
+            padding: 15px;
+            text-align: right;
+        }
+
+        .note {
+            font-size: 12px;
+            color: #94a3b8;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .footer {
+            font-size: 11px;
+            color: #94a3b8;
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid #f1f5f9;
+            background-color: #fafafa;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Order Confirmation</h1>
+        <p>Thank you for ordering at Diskusi Coffee</p>
+    </div>
+    <div class="content">
+        <div class="greeting">Hello, {{userName}}!</div>
+        <div class="intro-text">
+            Your coffee order has been successfully created and paid using your wallet. Here are the order details:
+        </div>
+
+        <table class="receipt-table">
+            <tr>
+                <td class="receipt-td-label">Order ID</td>
+                <td class="receipt-td-value">#{{orderId}}</td>
+            </tr>
+            <tr>
+                <td class="receipt-td-label">Date & Time</td>
+                <td class="receipt-td-value">{{date}}</td>
+            </tr>
+            <tr>
+                <td class="receipt-td-label">Order For / Table</td>
+                <td class="receipt-td-value">{{orderFor}}</td>
+            </tr>
+            <tr>
+                <td class="receipt-td-label">Payment Status</td>
+                <td class="receipt-td-value" style="color: #10b981; font-weight: 800;">SUCCESS (PAID)</td>
+            </tr>
+            <tr>
+                <td colspan="2" style="border-top: 1px dashed #fcd34d; height: 1px; padding: 0;"></td>
+            </tr>
+            <tr>
+                <td class="receipt-td-total-label">Total Amount Paid</td>
+                <td class="receipt-td-total-value">{{amount}}</td>
+            </tr>
+        </table>
+
+        <p class="intro-text" style="text-align: center; margin-bottom: 0;">
+            Please wait a moment. Our barista is preparing your freshly brewed coffee!
+        </p>
+        
+        <div class="note">
+            This is an automatically generated receipt. Please do not reply to this email.
+        </div>
+    </div>
+    <div class="footer">
+        &copy; {{year}} Diskusi Coffee. All rights reserved.<br>
+        Sent to {{email}}
+    </div>
+</div>
+</body>
+</html>
