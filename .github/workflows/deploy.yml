@@ -110,7 +110,7 @@ jobs:
           export KUBECONFIG=/home/deploy/.kube/config
 
           # Patch the deployment to use the new SHA tag
-          kubectl set image deployment/email-service-coffe -n dev-coffe \
+          kubectl set image deployment/email-service-coffe -n coffe \
            email-service-coffe=ghcr.io/${{ github.repository_owner }}/email-service-coffe:${{ steps.vars.outputs.sha }}
 
           EOF
